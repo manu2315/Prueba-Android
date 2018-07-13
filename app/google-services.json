@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "206771493723",
+    "firebase_url": "https://pruebaandroid-d696b.firebaseio.com",
+    "project_id": "pruebaandroid-d696b",
+    "storage_bucket": "pruebaandroid-d696b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:206771493723:android:49f86f1c0da1d8b5",
+        "android_client_info": {
+          "package_name": "com.example.asus.prueba_android"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "206771493723-piq5a334dsdesc1mf664vjgn9prtm7ju.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJ6_6_RpZ6hlM-TX3rud_Po0y4nxA2Q0A"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
