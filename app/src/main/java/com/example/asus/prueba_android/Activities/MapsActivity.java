@@ -285,7 +285,8 @@ public  class MapsActivity extends FragmentActivity implements OnMapReadyCallbac
                                             ruta.firebaseSave();
 
                                             handler.removeCallbacks(myRunnable);
-
+                                            txtDestination.setText("");
+                                            txtMyLocation.setText("");
                                             return;
 
 

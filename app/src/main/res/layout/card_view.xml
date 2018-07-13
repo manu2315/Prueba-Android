@@ -9,7 +9,7 @@
     android:orientation="vertical">
 
     <android.support.v7.widget.CardView
-        android:id="@+id/card_view_padron_2"
+        android:id="@+id/card_view_"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="0.2dp"
@@ -24,7 +24,7 @@
 
 
             <TextView
-                android:id="@+id/lblPadron"
+                android:id="@+id/lblOrigen"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="204dp"
@@ -38,7 +38,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/lblContacto"
+                android:id="@+id/lblDestino"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
@@ -52,7 +52,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/imgBtnInside"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/lblPadron"
+                app:layout_constraintTop_toBottomOf="@+id/lblOrigen"
                 app:layout_constraintVertical_bias="0.0" />
 
             <ImageButton
