@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Prueba-Android</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="google_direction_key">AIzaSyA9V_RkJIMqT6DPgwwcv-XGF_W_mql0C0g</string>
 </resources>
