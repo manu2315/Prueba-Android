@@ -100,12 +100,15 @@ public  class MapsActivity extends FragmentActivity implements OnMapReadyCallbac
         btnGo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ruta = new Routes();
                 sDestination = txtDestination.getText().toString();
                 sMyLocation = txtMyLocation.getText().toString();
+                ruta.setLocation(sMyLocation);
+                ruta.setDestination(sDestination);
                 sDestination = sDestination.replace(" ","+");
                 sMyLocation = sMyLocation.replace(" ","+");
                 mapFragment.getMapAsync(MapsActivity.this);
-                ruta = new Routes();
+
             }
         });
 
@@ -278,8 +281,7 @@ public  class MapsActivity extends FragmentActivity implements OnMapReadyCallbac
                                             ruta.setDesLon(String.valueOf(endPos.longitude));
                                             ruta.setLocationLat(String.valueOf(startPos.latitude));
                                             ruta.setLocationLon(String.valueOf(startPos.longitude));
-                                            ruta.setLocation(sMyLocation);
-                                            ruta.setDestination(sDestination);
+
                                             ruta.firebaseSave();
 
                                             handler.removeCallbacks(myRunnable);
