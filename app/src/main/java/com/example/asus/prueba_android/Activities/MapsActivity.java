@@ -3,8 +3,12 @@ package com.example.asus.prueba_android.Activities;
 import android.animation.ValueAnimator;
 import android.graphics.Color;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -13,8 +17,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.asus.prueba_android.Classes.Common;
+import com.example.asus.prueba_android.Classes.Routes;
 import com.example.asus.prueba_android.Interfaces.IGoogleApi;
 import com.example.asus.prueba_android.R;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -30,6 +37,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.SquareCap;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -41,7 +53,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public  class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
+        GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener {
 
     private GoogleMap mMap;
     SupportMapFragment mapFragment;
@@ -50,6 +63,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private float v;
     private double lat,lng;
     private Handler handler;
+    Runnable myRunnable;
     private LatLng startPos,endPos;
     private int index,next;
     private Button btnGo;
@@ -58,10 +72,21 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private PolylineOptions polylineOptions, blackPolylineOptions;
     private Polyline blackPolyline,greyPolyline;
 
+    public FirebaseDatabase database;
+    public DatabaseReference reference;
+    Routes ruta;
+
     private LatLng myLocation;
+    LatLng newPos;
 
     IGoogleApi mService;
 
+    //Autocompletado
+    private RecyclerView recyclerView;
+    private LinearLayoutManager linearLayoutManager;
+    //private AT_Adapter mAdapter;
+    protected GoogleApiClient myGoogleApiClient;
+    //falta adapter
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,17 +105,47 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 sDestination = sDestination.replace(" ","+");
                 sMyLocation = sMyLocation.replace(" ","+");
                 mapFragment.getMapAsync(MapsActivity.this);
+                ruta = new Routes();
             }
         });
 
         mService = Common.getGoogleAPi();
+
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                for(DataSnapshot snapshot: dataSnapshot.getChildren()){
+                    Routes rout = snapshot.getValue(Routes.class);
+                    if(rout.getId()==null){
+                        rout.setId(snapshot.getKey().toString());
+                       //rout.firebaseSave();
+                    }
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
     }
 
     private void bindUI(){
+        database= FirebaseDatabase.getInstance();
+        reference=database.getReference("Routes");
         polylineList = new ArrayList<>();
         btnGo = (Button) findViewById(R.id.btnGo);
+        //Adapter
         txtDestination = (EditText)findViewById(R.id.txtDestination);
         txtMyLocation = (EditText)findViewById(R.id.txtMyLocation);
+
+
+        //recyclerView.setAdapter();
+
     }
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -113,10 +168,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         String requestUrl = null;
         try{
-            requestUrl = "https://maps.googleapis.com/maps/api/directions/json?"+
+            /*requestUrl = "https://maps.googleapis.com/maps/api/directions/json?"+
                     "mode=driving&"+
                     "transit_routing_preference=less_driving&"+
                     "origin="+sydney.latitude+","+sydney.longitude+"&"+
+                    "destination="+sDestination+"&"+
+                    "key="+getResources().getString(R.string.google_direction_key);*/
+            requestUrl = "https://maps.googleapis.com/maps/api/directions/json?"+
+                    "mode=driving&"+
+                    "transit_routing_preference=less_driving&"+
+                    "origin="+sMyLocation+"&"+
                     "destination="+sDestination+"&"+
                     "key="+getResources().getString(R.string.google_direction_key);
             Log.d("URL",requestUrl);
@@ -190,9 +251,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.car)));
 
                                 handler = new Handler();
+
                                 index = -1;
                                 next =1;
-                                handler.postDelayed(new Runnable() {
+                                handler.postDelayed(myRunnable=new Runnable() {
                                     @Override
                                     public void run() {
                                         if(index < polylineList.size()-1){
@@ -200,11 +262,36 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                             next = index+1;
 
                                         }
+                                        else
+                                            {
+                                                Toast.makeText(MapsActivity.this,"Llegaste",Toast.LENGTH_SHORT).show();
+                                        }
                                         if(index < polylineList.size()-1){
                                             startPos = polylineList.get(index);
                                             endPos= polylineList.get(next);
+
                                         }
-                                        final ValueAnimator valueAnimator = ValueAnimator.ofFloat(0,1);
+                                        else
+                                        {
+                                            //Toast.makeText(MapsActivity.this,"Llegaste",Toast.LENGTH_SHORT).show();
+                                            ruta.setDesLat(String.valueOf(endPos.latitude));
+                                            ruta.setDesLon(String.valueOf(endPos.longitude));
+                                            ruta.setLocationLat(String.valueOf(startPos.latitude));
+                                            ruta.setLocationLon(String.valueOf(startPos.longitude));
+                                            ruta.setLocation(sMyLocation);
+                                            ruta.setDestination(sDestination);
+                                            ruta.firebaseSave();
+
+                                            handler.removeCallbacks(myRunnable);
+
+                                            return;
+
+
+                                        }
+
+
+                                        //final ValueAnimator valueAnimator = ValueAnimator.ofFloat(0,1);
+                                        final ValueAnimator valueAnimator = ValueAnimator.ofFloat(0,100);
                                         valueAnimator.setDuration(3000);
                                         valueAnimator.setInterpolator(new LinearInterpolator());
                                         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -216,7 +303,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                 lat = v*endPos.latitude+(1-v)
                                                         *startPos.latitude;
 
-                                                LatLng newPos = new LatLng(lat,lng);
+                                                //LatLng newPos = new LatLng(lat,lng);
+                                                newPos = new LatLng(lat,lng);
                                                 marker.setPosition(newPos);
                                                 marker.setAnchor(0.5f,0.5f);
                                                 marker.setRotation(getBearing(startPos,newPos));
@@ -225,12 +313,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                                 .zoom(15.5f)
                                                 .build()));
 
+
+
+
                                             }
                                         });
 
                                         valueAnimator.start();
                                         handler.postDelayed(this,3000);
                                     }
+
                                 },3000);
 
 
@@ -305,4 +397,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return poly;
     }
 
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
 }
