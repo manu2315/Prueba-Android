@@ -276,7 +276,7 @@ public  class MapsActivity extends FragmentActivity implements OnMapReadyCallbac
                                         }
                                         else
                                         {
-                                            //Toast.makeText(MapsActivity.this,"Llegaste",Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(MapsActivity.this,"En hora buena, haz llegado a tu destino.",Toast.LENGTH_SHORT).show();
                                             ruta.setDesLat(String.valueOf(endPos.latitude));
                                             ruta.setDesLon(String.valueOf(endPos.longitude));
                                             ruta.setLocationLat(String.valueOf(startPos.latitude));
@@ -287,6 +287,7 @@ public  class MapsActivity extends FragmentActivity implements OnMapReadyCallbac
                                             handler.removeCallbacks(myRunnable);
                                             txtDestination.setText("");
                                             txtMyLocation.setText("");
+                                            Toast.makeText(MapsActivity.this,"En hora buena, haz llegado a tu destino.",Toast.LENGTH_SHORT).show();
                                             return;
 
 
